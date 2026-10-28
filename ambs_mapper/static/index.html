@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>amBS Mapper</title>
+<link rel="stylesheet" href="/style.css">
+<script src="/app.js" defer></script>
+<script src="/igv-panel.js" defer></script>
+</head>
+<body>
+<header>
+  <h1>amBS Mapper</h1>
+  <p>Nanoporeで読んだアンプリコンバイサルファイトシーケンスを、マウスゲノム（GRCm39）上でアレル別・タグ別に解析します。</p>
+  <div id="status" class="status"></div>
+</header>
+<main>
+<section id="setup-box" class="card hidden">
+  <h2>参照ゲノムの準備</h2>
+  <p>GRCm39のゲノム配列（約800 MB）をダウンロードし、リードをゲノム全体にマッピングするためのバイサルファイト用索引（約13 GB、作成に5分程度、メモリ約20 GB）を作ります。初回のみ必要です。系統SNPは解析時に必要な領域だけ取得します。</p>
+  <button id="setup-button">参照ゲノムを準備</button>
+</section>
+
+<section class="card">
+  <h2>1. 入力ファイル</h2>
+  <p class="hint">FASTQ（.fastq / .fq / .gz）または未アライメントBAMを <code>WG_amBS_Mapper\data\input</code> に置いて「更新」を押してください。フォルダを選ぶと中のファイルをすべて使います。</p>
+  <div class="row"><button id="inputs-refresh" class="secondary">更新</button><input id="inputs-filter" placeholder="絞り込み"></div>
+  <div id="inputs" class="inputs"></div>
+  <div class="row">
+    <button id="explore-button" class="secondary">選択したファイルのリード構造を調べる</button>
+    <span class="hint">タグやプライマーが分からないとき: Nexteraインデックスの組み合わせとアンプリコン候補（推定プライマー、ゲノム位置）を調べ、結果から表に取り込めます。</span>
+  </div>
+</section>
+
+<section class="card">
+  <h2>2. アンプリコン（プライマー）</h2>
+  <p class="hint">バイサルファイト用プライマーを5'→3'で入力します（タグは含めません。Y/RなどIUPAC表記可）。ゲノム上の位置は自動で探します。<br>位置が分かっている場合やロングリードでは「領域」（GRCm39、例 chr12:109494123-109494444）と鎖（+: 上鎖のCpGを見る、-: 下鎖）を入力すればプライマーは省略できます。リードはすべてゲノム全体にマッピングし、領域に重なるものを解析します。</p>
+  <table class="edit" id="amplicons"><thead><tr><th>名前</th><th>Forwardプライマー</th><th>Reverseプライマー</th><th>最大産物長(bp)</th><th>領域（指定時はプライマー検索なし）</th><th>鎖</th><th></th></tr></thead><tbody></tbody></table>
+  <button id="amplicon-add" class="secondary">行を追加</button>
+</section>
+
+<section class="card">
+  <h2>3. サンプル（タグと系統）</h2>
+  <div class="row">
+    <label>タグ形式
+      <select id="layout">
+        <option value="inline">インライン（プライマー直前のタグ）</option>
+        <option value="nextera">Nextera デュアルインデックス（i5/i7）</option>
+      </select>
+    </label>
+  </div>
+  <p class="hint" data-layout="inline">タグはプライマーの5'側に付けたインライン配列です（スペーサーがある場合はタグに含めてください）。片側だけでも構いません。</p>
+  <p class="hint hidden" data-layout="nextera">i5・i7はNextera XTの名前（例 S520, N712）か、サンプルシートと同じ向きの8塩基配列で入力します。インデックスとプライマーの間のNexteraアダプターは自動で考慮します。i5/i7がどちらのプライマー側にあっても構いません。</p>
+  <p class="hint">系統は「B6」「JF1」のような略称でも入力できます。FASTQ欄は、ファイルごとにサンプルが分かれている場合だけ指定します。</p>
+  <table class="edit" id="samples"><thead><tr><th>サンプル名</th><th>群</th><th>アンプリコン</th><th id="th-tag-f">タグF</th><th id="th-tag-r">タグR</th><th>母系統</th><th>父系統</th><th>FASTQ限定</th><th></th></tr></thead><tbody></tbody></table>
+  <div class="row auto">
+    <span class="hint">サンプル表が空のときの自動サンプル（Nexteraはインデックスの組み合わせごと、インラインはアンプリコンごとの全リード）:</span>
+    <input id="auto-mother" list="strain-list" placeholder="母系統" class="short">
+    <input id="auto-father" list="strain-list" placeholder="父系統" class="short">
+  </div>
+  <div class="row">
+    <button id="sample-add" class="secondary">行を追加</button>
+    <button id="paste-toggle" class="secondary">Excelから貼り付け</button>
+    <span class="hint">一括設定:</span>
+    <input id="bulk-mother" list="strain-list" placeholder="母系統" class="short">
+    <input id="bulk-father" list="strain-list" placeholder="父系統" class="short">
+    <button id="bulk-apply" class="secondary">全行に適用</button>
+  </div>
+  <div id="paste-box" class="hidden">
+    <p class="hint">Excelの範囲をコピーして貼り付けます。列の順番: サンプル名, 群, アンプリコン, タグF, タグR, 母系統, 父系統, FASTQ限定（後ろの列は省略可、見出し行は自動で除外）。</p>
+    <textarea id="paste-text" rows="6"></textarea>
+    <button id="paste-apply">表に反映（置き換え）</button>
+  </div>
+  <datalist id="strain-list"></datalist>
+</section>
+
+<section class="card">
+  <h2>4. 判定条件</h2>
+  <details>
+    <summary>詳細設定（既定値はQUMA-sanのsetting.csvと同じ考え方）</summary>
+    <div class="grid" id="params"></div>
+  </details>
+  <div class="row">
+    <label>解析名 <input id="title" placeholder="例: IG-DMR 2026-10"></label>
+    <label>CPUスレッド <input id="threads" type="number" min="1" max="256" class="short"></label>
+  </div>
+  <div class="row">
+    <button id="check-button" class="secondary">プライマーとSNPを確認</button>
+    <button id="run-button">解析開始</button>
+    <button id="export-button" class="secondary">設定を保存</button>
+    <label class="secondary file">設定を読込<input id="import-file" type="file" accept=".json"></label>
+  </div>
+  <div id="form-error" class="error"></div>
+</section>
+
+<section class="card">
+  <h2>解析履歴</h2>
+  <table class="list"><thead><tr><th>開始</th><th>解析名</th><th>種類</th><th>状態</th><th>進捗</th><th></th></tr></thead><tbody id="jobs"></tbody></table>
+</section>
+
+<section id="result" class="card hidden">
+  <h2 id="result-title">結果</h2>
+  <div id="result-body"></div>
+</section>
+</main>
+</body>
+</html>

@@ -1,0 +1,60 @@
+:root { --fg: #1d2330; --muted: #5d6676; --line: #d9dee7; --bg: #f5f7fa; --card: #fff; --accent: #2457c5; --warn: #9a5b00; --bad: #b42318; --good: #157a3c; }
+* { box-sizing: border-box; }
+body { margin: 0; font-family: "Segoe UI", "Hiragino Sans", "Yu Gothic UI", Meiryo, sans-serif; color: var(--fg); background: var(--bg); font-size: 14px; }
+header { padding: 16px 24px 8px; }
+header h1 { margin: 0 0 4px; font-size: 22px; }
+header p { margin: 0; color: var(--muted); }
+main { padding: 0 24px 40px; max-width: 1400px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 14px 18px; margin: 14px 0; }
+.card h2 { font-size: 16px; margin: 0 0 8px; }
+.card h3 { font-size: 15px; margin: 18px 0 6px; }
+.hint { color: var(--muted); font-size: 13px; margin: 4px 0 8px; }
+.hidden { display: none !important; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 8px 0; }
+button, .file { background: var(--accent); color: #fff; border: 1px solid var(--accent); border-radius: 6px; padding: 6px 14px; font-size: 14px; cursor: pointer; }
+button.secondary, .file.secondary { background: #fff; color: var(--accent); }
+button.small { padding: 2px 8px; font-size: 12px; }
+button.danger { color: var(--bad); border-color: var(--bad); background: #fff; }
+button:disabled { opacity: .5; cursor: default; }
+.file input { display: none; }
+input, select, textarea { font: inherit; border: 1px solid var(--line); border-radius: 5px; padding: 4px 6px; }
+input.short { width: 110px; }
+textarea { width: 100%; font-family: Consolas, monospace; }
+table { border-collapse: collapse; width: 100%; }
+th, td { border-bottom: 1px solid var(--line); padding: 4px 6px; text-align: left; vertical-align: top; }
+th { background: #eef2f8; font-weight: 600; font-size: 13px; white-space: nowrap; }
+table.edit input, table.edit select { width: 100%; min-width: 70px; }
+table.edit td.primer input { font-family: Consolas, monospace; min-width: 220px; }
+table.edit td.tag input { font-family: Consolas, monospace; }
+.inputs { max-height: 260px; overflow: auto; border: 1px solid var(--line); border-radius: 6px; padding: 6px; }
+.inputs label { display: block; padding: 2px 0; font-family: Consolas, monospace; font-size: 13px; }
+.inputs .folder { font-weight: 600; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 8px 18px; margin: 10px 0; }
+.grid label { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
+.grid input[type=number] { width: 90px; }
+.error { color: var(--bad); white-space: pre-wrap; margin-top: 6px; }
+.warn { color: var(--warn); }
+.status { margin-top: 8px; font-size: 13px; }
+.badge { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 12px; border: 1px solid var(--line); }
+.badge.completed { color: var(--good); border-color: var(--good); }
+.badge.failed { color: var(--bad); border-color: var(--bad); }
+.badge.running { color: var(--accent); border-color: var(--accent); }
+.list td { font-size: 13px; }
+.photos { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 12px; }
+.photos figure { margin: 0; border: 1px solid var(--line); border-radius: 6px; padding: 6px; background: #fff; }
+.photos img, .plots img { width: 100%; height: auto; }
+.photos figcaption { font-size: 12px; color: var(--muted); }
+.plots { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 12px; }
+.scroll { overflow-x: auto; }
+pre.log { background: #10151f; color: #d6deeb; padding: 10px; border-radius: 6px; max-height: 300px; overflow: auto; font-size: 12px; white-space: pre-wrap; }
+code { background: #eef2f8; padding: 1px 4px; border-radius: 3px; }
+
+.candidate { border: 1px solid var(--line, #d0d7de); border-radius: 6px; padding: 8px 12px; margin: 10px 0; }
+.candidate h4 { margin: 0 0 4px; }
+.candidate p { margin: 4px 0; word-break: break-all; }
+
+.igv-controls details { margin: 4px 0; }
+.igv-tracks { display: flex; flex-wrap: wrap; gap: 4px 14px; padding: 4px 0 6px 12px; }
+.igv-tracks label { white-space: nowrap; }
+.igv-unknown { color: var(--warn); font-weight: 600; }
+.igv-viewer { border: 1px solid var(--line); border-radius: 6px; min-height: 120px; }

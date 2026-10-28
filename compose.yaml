@@ -1,0 +1,22 @@
+services:
+  ambs-mapper:
+    build: .
+    ports:
+      - "127.0.0.1:8503:8501"
+    environment:
+      AMBS_INDEX_DIR: /index
+    volumes:
+      - ./data:/data
+      - index:/index
+    init: true
+    restart: unless-stopped
+    stop_grace_period: 30s
+    healthcheck:
+      test: ["CMD", "python", "-c", "import json, urllib.request; assert json.load(urllib.request.urlopen('http://127.0.0.1:8501/api/health', timeout=3))['app'] == 'ambs-mapper'"]
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
+
+volumes:
+  index:
